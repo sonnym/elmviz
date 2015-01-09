@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+if [[ -z "$1" ]]
+then
+  echo "usage: elmviz ENTRYPOINT"
+  exit 1
+fi
+
+awk -f "$DIR/process_file.awk" -v filename="$1" | dot -Tsvg > elmviz.svg
