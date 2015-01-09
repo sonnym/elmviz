@@ -16,13 +16,19 @@ BEGIN {
 
       if (!(module in moduleCache)) {
         moduleCache[module] = ""
-        tree[moduleCount++] = module ":" processFile(moduleFilename(module))
+        filename = moduleFilename(module)
+
+        if (fileExists(filename)) {
+          tree[moduleCount++] = module ":" processFile(filename)
+        }
       }
 
-      print "\t\"" fileModule "\" -> \"" module "\" [arrowhead=\"open\", arrowtail=\"none\"]"
+      if (fileExists(filename) && fileExists(moduleFilename(module))) {
+        print "\t\"" fileModule "\" -> \"" module "\" [arrowhead=\"open\", arrowtail=\"none\"]"
+      }
     }
 
-    if (fileModule != "") {
+    if (fileModule != "" && fileExists(moduleFilename(fileModule))) {
       print "\t\"" fileModule "\" [shape=box]"
     }
   }
@@ -40,11 +46,7 @@ function printFooter() {
 }
 
 function processFile(filename) {
-  imports = ""
-
-  if (system( "[ -f " filename " ] ") == 0) {
-    "awk 'BEGIN { ORS=\",\" } $0 ~ /^import\\s+/ { print $2 }' \"" filename "\" | sed 's/,$//'" | getline imports
-  }
+  "awk 'BEGIN { ORS=\",\" } $0 ~ /^import\\s+/ { print $2 }' \"" filename "\" | sed 's/,$//'" | getline imports
 
   return imports
 }
@@ -59,4 +61,8 @@ function filenameModule(filename) {
   split(filename, parts, ".")
 
   return parts[1];
+}
+
+function fileExists(filename) {
+  return system( "[ -f " filename " ] ") == 0;
 }
